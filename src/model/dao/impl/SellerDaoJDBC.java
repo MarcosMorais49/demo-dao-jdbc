@@ -88,8 +88,27 @@ public class SellerDaoJDBC implements SellerDao {
     }
 
     @Override
-    public void deletById(Integer id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void deleteById(Integer id) {
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement("DELETE FROM seller WHERE id = ?");
+            st.setInt(1, id);
+            
+            int rowsAffected = st.executeUpdate();
+            
+            if (rowsAffected > 0){
+                System.out.println(rowsAffected + "Item(s) Deleted!");
+            }
+            else {
+                throw new DbException("Invalid data, no items deleted!");
+            }
+        }
+        catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        }
+        finally{
+            DB.closeStatement(st);
+        }
     }
 
     @Override
