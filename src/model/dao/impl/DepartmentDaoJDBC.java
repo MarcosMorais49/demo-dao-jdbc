@@ -18,8 +18,7 @@ public class DepartmentDaoJDBC implements DepartmentDao {
     
     public DepartmentDaoJDBC (Connection conn){
         this.conn = conn;
-    }
-    
+    }    
     
     @Override
     public void insert(Department obj) {
@@ -90,7 +89,25 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
     @Override
     public List<Department> findAll() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<Department> list = new ArrayList<>();
+        
+        PreparedStatement st = null;
+        
+        try{
+            st = conn.prepareStatement("SELECT Id as depId, Name as depName FROM department");
+            ResultSet rs = st.executeQuery();
+            while (rs.next()){
+                Department dep = instantiateDepartment(rs);
+                list.add(dep);
+            }
+        }
+        catch (SQLException e){
+            throw new DbException(e.getMessage());
+        }
+        finally{
+            DB.closeStatement(st);
+        }
+        return list;
     }
     
     public Department instantiateDepartment(ResultSet rs) throws SQLException{
