@@ -16,24 +16,30 @@ public class Program2 {
         DepartmentDao departmentDao = new DaoFactory().createDepartmentDao();
                
         System.out.println("=== TEST 1: Department findById =====");
-        Department findDep = departmentDao.findById(3);
-        System.out.println(findDep);
+        Department dep = departmentDao.findById(3);
+        System.out.println(dep);
         
         System.out.println("=== TEST 2: Department findAll =====");
-        List<Department> list = new ArrayList<>();
-        list = departmentDao.findAll();
-        for (Department listDep : list){
-            System.out.println(listDep);
+        List<Department> list = departmentDao.findAll();
+        for (Department d : list){
+            System.out.println(d);
         }
         
-      /*  System.out.println("=== TEST 3: Department insert =====");
+        System.out.println("=== TEST 3: Department insert =====");
         System.out.println("Digite um nome para o novo departamento: ");
         String newDep = sc.nextLine();
-        Department dep = new Department(null, newDep);
+        dep = new Department(null, newDep);
         departmentDao.insert(dep);
-        System.out.println("Inserted! New Id " + dep.getId());  */
+        System.out.println("Inserted! New Id " + dep.getId());  
       
+        System.out.println("=== TEST 2: Department update =====");
+        Department dep2 = departmentDao.findById(8);
+        dep2.setName("food");
+        departmentDao.update(dep2);
         
-    }
-    
+        System.out.println("=== TEST 2: Department delete =====");
+        System.out.print("Enter id for delete test: ");
+        int id = sc.nextInt();
+        departmentDao.deletById(id);
+    }    
 }

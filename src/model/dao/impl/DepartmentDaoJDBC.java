@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import db.DB;
 import db.DbException;
+import db.DbIntegrityException;
 import java.util.List;
 import model.dao.DepartmentDao;
 import model.entities.Department;
@@ -32,15 +33,15 @@ public class DepartmentDaoJDBC implements DepartmentDao {
             int rowsAffected = st.executeUpdate();
             if (rowsAffected > 0){
                 ResultSet rs = st.getGeneratedKeys();
-                System.out.println("Insert sucessfull!");
                 if (rs.next()){
                     int id = rs.getInt(1);
                     obj.setId(id);
                 }
+                System.out.println("Insert sucessfull!");
                 DB.closeResultSet(rs);
             }
             else {
-                throw new DbException("Insert fail, department not created!");
+                throw new DbException("Unexpected error! No rows affected!");
             }
         }
         catch (SQLException e){
@@ -53,12 +54,53 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
     @Override
     public void update(Department obj) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        PreparedStatement st = null;
+        try{
+            st = conn.prepareStatement(
+                    "UPDATE department "
+                    + "SET Name = ? "
+                    + "WHERE Id = ?");
+            st.setString(1, obj.getName());
+            st.setInt(2, obj.getId());
+            int rowsAffected = st.executeUpdate();
+            if (rowsAffected > 0){
+                System.out.println("Update completed");
+            }
+            else {
+                System.out.println("Update not completed");
+            }
+        }
+        catch(SQLException e){
+            throw new DbException(e.getMessage());
+        }
+        finally{
+            DB.closeStatement(st);
+        }
     }
 
     @Override
     public void deletById(Integer id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement(
+                    "DELETE "
+                    + "FROM department "
+                    + "WHERE Id = ?");
+            st.setInt(1, id);
+            int rowsAffected = st.executeUpdate();
+            if (rowsAffected > 0){
+                System.out.println(rowsAffected + " Department(s) deleted!");
+            }
+            else {
+                throw new DbException("Invalid data, no items deleted!");
+            }
+        }
+        catch (SQLException e) {
+            throw new DbIntegrityException(e.getMessage());
+        }
+        finally{
+            DB.closeStatement(st);
+        }
     }
 
     @Override
@@ -92,14 +134,16 @@ public class DepartmentDaoJDBC implements DepartmentDao {
         List<Department> list = new ArrayList<>();
         
         PreparedStatement st = null;
+        ResultSet rs = null;
         
         try{
             st = conn.prepareStatement("SELECT Id as depId, Name as depName FROM department");
-            ResultSet rs = st.executeQuery();
+            rs = st.executeQuery();
             while (rs.next()){
                 Department dep = instantiateDepartment(rs);
                 list.add(dep);
             }
+            return list;
         }
         catch (SQLException e){
             throw new DbException(e.getMessage());
@@ -107,7 +151,6 @@ public class DepartmentDaoJDBC implements DepartmentDao {
         finally{
             DB.closeStatement(st);
         }
-        return list;
     }
     
     public Department instantiateDepartment(ResultSet rs) throws SQLException{
